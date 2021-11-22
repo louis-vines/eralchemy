@@ -24,6 +24,7 @@ def Column():
 def Relation(Column):
     col_a = Column(name='col_a')
     col_b = Column(name='col_b')
+
     class _Relation:
        def __init__(self, col1=col_a, col2=col_b):
            self.col1 = [col_a]
