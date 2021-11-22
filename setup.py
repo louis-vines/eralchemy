@@ -67,7 +67,9 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'SQLAlchemy',
-        'pygraphviz'
+        'pydbml',
+        'pygraphviz',
+        'psycopg2-binary',
     ],
     entry_points={
         'console_scripts': [
