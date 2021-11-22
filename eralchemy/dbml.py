@@ -1,5 +1,13 @@
-from eralchemy.models import Relation
-from eralchemy.sqla import format_name
+from eralchemy.models import Relation, Column
+from eralchemy.sqla import format_name, format_type
+
+
+def column_to_intermediary(column, type_formatter=format_type):
+    return Column(
+        name=column.name,
+        type=type_formatter(column.type),
+        is_key=column.pk,
+    )
 
 
 def relation_to_intermediary(relation):

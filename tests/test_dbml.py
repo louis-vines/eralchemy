@@ -7,6 +7,7 @@ import pytest
 
 from eralchemy.dbml import (
     add_nullability,
+    column_to_intermediary,
     extract_cardinalities,
     relation_to_intermediary,
 )
@@ -32,6 +33,7 @@ def Column():
     @dataclass
     class _Column:
         name: str = 'col_a'
+        type: str = 'a_type'
         not_null: bool = False
         pk: bool = False
 
@@ -56,24 +58,35 @@ def Relation(Column):
     return _Relation
 
 
+def test_column_to_intermediary(Column):
+    column = Column()
+
+    intermediary_col = column_to_intermediary(column)
+
+    assert isinstance(intermediary_col, ERColumn)
+    assert intermediary_col.name =='col_a'
+    assert intermediary_col.type == 'a_type'
+    assert not intermediary_col.is_key
+
+
 @pytest.mark.parametrize(
     'ith_ref, l_col, r_col, l_card, r_card',
     [
-        (0, 'dim_contract_details', 'fct_contract_signed', '1', '*'),
-        (1, 'fct_contract_signed', 'dim_foo', '*', '1'),
-        (2, 'dim_bar', 'fct_contract_signed', '1', '?'),
+        (0, 'dim_contract_details', 'fct_contract_signed', '1', '*'),  # <
+        (1, 'fct_contract_signed', 'dim_foo', '*', '1'),  # >
+        (2, 'dim_bar', 'fct_contract_signed', '1', '?'),  # -
     ]
 )
 def test_relation_to_intermediary(dbml, ith_ref, l_col, r_col, l_card, r_card):
     relation = dbml.refs[ith_ref]
 
-    intermediary_repr = relation_to_intermediary(relation)
+    intermediary_relation = relation_to_intermediary(relation)
 
-    assert isinstance(intermediary_repr, ERRelation)
-    assert intermediary_repr.left_col == l_col
-    assert intermediary_repr.right_col == r_col
-    assert intermediary_repr.left_cardinality == l_card
-    assert intermediary_repr.right_cardinality == r_card
+    assert isinstance(intermediary_relation, ERRelation)
+    assert intermediary_relation.left_col == l_col
+    assert intermediary_relation.right_col == r_col
+    assert intermediary_relation.left_cardinality == l_card
+    assert intermediary_relation.right_cardinality == r_card
 
 
 @pytest.mark.parametrize(
