@@ -49,6 +49,7 @@ def relation_to_intermediary(relation):
         right_cardinality=right_cardinality,
     )
 
+
 def extract_cardinalities(relation):
     """Get intermediary cardinality represenation from pydbml relation"""
     columns = (relation.col1[0], relation.col2[0])

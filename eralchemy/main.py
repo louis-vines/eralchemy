@@ -9,6 +9,7 @@ from sqlalchemy.exc import ArgumentError
 
 from eralchemy.version import version as __version__
 from eralchemy.cst import GRAPH_BEGINNING
+from eralchemy.dbml import dbml_file_to_intermediary
 from eralchemy.sqla import metadata_to_intermediary, declarative_to_intermediary, database_to_intermediary
 from eralchemy.helpers import check_args
 from eralchemy.parser import markdown_file_to_intermediary, line_iterator_to_intermediary, ParsingException
@@ -130,6 +131,11 @@ def all_to_intermediary(filename_or_input, schema=None):
         return tables, relationships
     except KeyError:
         pass
+
+    # try read dbml file
+    if isinstance(filename_or_input, basestring):
+        if filename_or_input.split('.')[-1] == 'dbml':
+            return dbml_file_to_intermediary(filename_or_input)
 
     # try to read markdown file.
     if isinstance(filename_or_input, basestring):

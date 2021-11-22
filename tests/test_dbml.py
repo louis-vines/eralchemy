@@ -19,6 +19,7 @@ from tests.common import (
     ERColumn,
     Relation as ERRelation,
     Table as ERTable,
+    check_intermediary_representation_dbml_fixture,
 )
 
 
@@ -67,15 +68,7 @@ def test_dbml_file_to_intermediary_integration(dbml):
 
 def test_pydbml_to_intermediary(dbml):
     tables, relations = pydbml_to_intermediary(dbml)
-    table_names = [table.name for table in tables]
-    expected_table_names = [
-        "fct_contract_signed", "dim_contract_details", "dim_foo", "dim_bar",
-    ]
-
-    assert all(isinstance(table, ERTable) for table in tables)
-    assert table_names == expected_table_names
-    assert all(isinstance(relation, ERRelation) for relation in relations)
-    assert len(relations) == 3
+    check_intermediary_representation_dbml_fixture(tables, relations)
 
 
 def test_table_to_intermediary(dbml):
