@@ -3,11 +3,13 @@ from eralchemy.sqla import format_name
 
 
 def relation_to_intermediary(relation):
-    return Relation(
-        left_col=format_name('foo'),
-        right_col=format_name('bar'),
-        left_cardinality='1',
-        right_cardinality='1',
+    left_cardinality, right_cardinality = extract_cardinalities(relation)
+
+    return  Relation(
+        left_col=format_name(relation.table1.name),
+        right_col=format_name(relation.table2.name),
+        left_cardinality=left_cardinality,
+        right_cardinality=right_cardinality,
     )
 
 def extract_cardinalities(relation):

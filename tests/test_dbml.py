@@ -1,5 +1,8 @@
 from dataclasses import dataclass
+import os
+from pathlib import Path
 
+from pydbml import PyDBML
 import pytest
 
 from eralchemy.dbml import (
@@ -13,6 +16,15 @@ from tests.common import (
     Relation as ERRelation,
     Table as ERTable,
 )
+
+
+current_folder, _ = os.path.split(__file__)
+
+
+@pytest.fixture(scope='module')
+def dbml():
+    fixture_filename = os.path.join(current_folder, 'fixtures', 'example.dbml')
+    return PyDBML(Path(fixture_filename))
 
 
 @pytest.fixture
@@ -29,26 +41,39 @@ def Column():
 @pytest.fixture
 def Relation(Column):
     col_1 = Column(name='col_a')
-    col_2 = Column(name='col_b')
+    col_2 = Column(name='col_c')
 
     class _Relation:
-       def __init__(self, ref_type, col_1=col_1, col_2=col_2):
-           """
-           ref_type should be in values (<, >, -)
-           """
-           self.type = ref_type
-           self.col1 = [col_1]
-           self.col2 = [col_2]
+       def __init__(
+                self, ref_type, col_1=col_1, col_2=col_2):
+            """
+            ref_type should be in values (<, >, -)
+            """
+            self.type = ref_type
+            self.col1 = [col_1]
+            self.col2 = [col_2]
 
     return _Relation
 
 
-def test_relation_to_intermediary(Relation):
-    relation = Relation('<')
+@pytest.mark.parametrize(
+    'ith_ref, l_col, r_col, l_card, r_card',
+    [
+        (0, 'dim_contract_details', 'fct_contract_signed', '1', '*'),
+        (1, 'fct_contract_signed', 'dim_foo', '*', '1'),
+        (2, 'dim_bar', 'fct_contract_signed', '1', '?'),
+    ]
+)
+def test_relation_to_intermediary(dbml, ith_ref, l_col, r_col, l_card, r_card):
+    relation = dbml.refs[ith_ref]
 
     intermediary_repr = relation_to_intermediary(relation)
 
     assert isinstance(intermediary_repr, ERRelation)
+    assert intermediary_repr.left_col == l_col
+    assert intermediary_repr.right_col == r_col
+    assert intermediary_repr.left_cardinality == l_card
+    assert intermediary_repr.right_cardinality == r_card
 
 
 @pytest.mark.parametrize(
