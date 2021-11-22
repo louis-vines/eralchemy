@@ -22,32 +22,62 @@ def Column():
 
 @pytest.fixture
 def Relation(Column):
-    col_a = Column(name='col_a')
-    col_b = Column(name='col_b')
+    col_1 = Column(name='col_a')
+    col_2 = Column(name='col_b')
 
     class _Relation:
-       def __init__(self, col1=col_a, col2=col_b):
-           self.col1 = [col_a]
-           self.col2 = [col_b]
+       def __init__(self, ref_type, col_1=col_1, col_2=col_2):
+           """
+           ref_type should be in values (<, >, -)
+           """
+           self.type = ref_type
+           self.col1 = [col_1]
+           self.col2 = [col_2]
 
     return _Relation
 
 
 @pytest.mark.parametrize(
-    'not_null, cardinality, expected_cardinality',
+    'ref_type, expected_cardinalities',
     [
-        (True, '+', '+'),
-        (True, '1', '1'),
-        (False, '+', '*'),
-        (False, '1', '?'),
+        ('<', ('1', '+')),
+        ('>', ('+', '1')),
+        ('-', ('1', '1')),
+        ('', (None, None)),
     ]
 )
-def test_add_nullability(Column, not_null, cardinality, expected_cardinality):
-    column = Column(not_null=not_null)
+def test_extract_cardinalities(Relation, Column, ref_type, expected_cardinalities):
+    relation = Relation(
+        ref_type,
+        col_1=Column('col_a', not_null=True),
+        col_2=Column('col_b', not_null=True),
+    )
 
-    cardinaliry_with_nulls = add_nullability(column, cardinality)
+    cardinalities = extract_cardinalities(relation)
 
-    assert cardinaliry_with_nulls == expected_cardinality
+    assert cardinalities == expected_cardinalities
+
+
+@pytest.mark.parametrize(
+    'ref_type, expected_cardinalities',
+    [
+        ('<', ('?', '*')),
+        ('>', ('*', '?')),
+        ('-', ('?', '?')),
+        ('', (None, None)),
+    ]
+)
+def test_extract_cardinalities_with_nullable(
+        Relation, Column, ref_type, expected_cardinalities):
+    relation = Relation(
+        ref_type,
+        col_1=Column('col_a', not_null=False),
+        col_2=Column('col_b', not_null=False),
+    )
+
+    cardinalities = extract_cardinalities(relation)
+
+    assert cardinalities == expected_cardinalities
 
 
 @pytest.mark.parametrize(
@@ -66,12 +96,3 @@ def test_add_nullability_can_use_primary_key_as_nullable_check(
     cardinaliry_with_nulls = add_nullability(column, cardinality)
 
     assert cardinaliry_with_nulls == expected_cardinality
-
-
-def test_extract_cardinalities(Relation):
-    relation = Relation()
-
-    cardinalities = extract_cardinalities(relation)
-    expected_cardinalities = ('1', '+')
-
-    assert cardinalities == expected_cardinalities
