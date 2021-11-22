@@ -30,3 +30,21 @@ def test_add_nullability(Column, not_null, cardinality, expected_cardinality):
     cardinaliry_with_nulls = add_nullability(column, cardinality)
 
     assert cardinaliry_with_nulls == expected_cardinality
+
+
+@pytest.mark.parametrize(
+    'pk, cardinality, expected_cardinality',
+    [
+        (True, '+', '+'),
+        (True, '1', '1'),
+        (False, '+', '*'),
+        (False, '1', '?'),
+    ]
+)
+def test_add_nullability_can_use_primary_key_as_nullable_check(
+        Column, pk, cardinality, expected_cardinality):
+    column = Column(pk=pk)
+
+    cardinaliry_with_nulls = add_nullability(column, cardinality)
+
+    assert cardinaliry_with_nulls == expected_cardinality
