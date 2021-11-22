@@ -8,8 +8,11 @@ import pytest
 from eralchemy.dbml import (
     add_nullability,
     column_to_intermediary,
+    dbml_file_to_intermediary,
     extract_cardinalities,
+    pydbml_to_intermediary,
     relation_to_intermediary,
+    table_to_intermediary,
 )
 
 from tests.common import (
@@ -20,11 +23,11 @@ from tests.common import (
 
 
 current_folder, _ = os.path.split(__file__)
+fixture_filename = os.path.join(current_folder, 'fixtures', 'example.dbml')
 
 
 @pytest.fixture(scope='module')
 def dbml():
-    fixture_filename = os.path.join(current_folder, 'fixtures', 'example.dbml')
     return PyDBML(Path(fixture_filename))
 
 
@@ -56,6 +59,39 @@ def Relation(Column):
             self.col2 = [col_2]
 
     return _Relation
+
+
+def test_dbml_file_to_intermediary_integration(dbml):
+    assert len(dbml_file_to_intermediary(fixture_filename)) == 2
+
+
+def test_pydbml_to_intermediary(dbml):
+    tables, relations = pydbml_to_intermediary(dbml)
+    table_names = [table.name for table in tables]
+    expected_table_names = [
+        "fct_contract_signed", "dim_contract_details", "dim_foo", "dim_bar",
+    ]
+
+    assert all(isinstance(table, ERTable) for table in tables)
+    assert table_names == expected_table_names
+    assert all(isinstance(relation, ERRelation) for relation in relations)
+    assert len(relations) == 3
+
+
+def test_table_to_intermediary(dbml):
+    table = dbml.tables[0]
+
+    intermediary_table = table_to_intermediary(table)
+    col_names = [col.name for col in intermediary_table.columns]
+    expected_col_names = [
+        "fct_contract_signed_k", "dim_foo_k", "dim_bar_k",
+        "dim_contract_details_k", "value",
+    ]
+
+    assert isinstance(intermediary_table, ERTable)
+    assert intermediary_table.name == 'fct_contract_signed'
+    assert all(isinstance(col, ERColumn) for col in intermediary_table.columns)
+    assert col_names == expected_col_names
 
 
 def test_column_to_intermediary(Column):
