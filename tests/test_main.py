@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
+import os
+
 from eralchemy.main import all_to_intermediary, get_output_mode, intermediary_to_schema, \
     intermediary_to_dot, intermediary_to_markdown, filter_resources
 from tests.common import Base, check_tables_relationships, check_intermediary_representation_simple_table, create_db, \
     markdown, relationships, tables, check_intermediary_representation_simple_all_table, check_tables_columns, \
-    check_filter
+    check_intermediary_representation_dbml_fixture, check_filter
 
 import pytest
 
+
+current_folder, _ = os.path.split(__file__)
+dbml_fixture_filename = os.path.join(current_folder, 'fixtures', 'example.dbml')
 
 def test_all_to_intermediary_base():
     tables, relationships = all_to_intermediary(Base)
@@ -28,6 +33,11 @@ def test_all_to_intermediary_db():
 def test_all_to_intermediary_markdown():
     tables, relationships = all_to_intermediary(markdown.split('\n'))
     check_intermediary_representation_simple_table(tables, relationships)
+
+
+def test_all_to_intermediary_dbml():
+    tables, relationships = all_to_intermediary(dbml_fixture_filename)
+    check_intermediary_representation_dbml_fixture(tables, relationships)
 
 
 def test_all_to_intermediary_fails():

@@ -159,6 +159,18 @@ def check_intermediary_representation_simple_table(tables, relationships):
     assert exclude_relation in relationships
 
 
+def check_intermediary_representation_dbml_fixture(tables, relationships):
+    """ Check that that the tables and relationships represents the model above. """
+    table_names = [table.name for table in tables]
+    expected_table_names = [
+        "fct_contract_signed", "dim_contract_details", "dim_foo", "dim_bar",
+    ]
+    assert all(isinstance(table, Table) for table in tables)
+    assert table_names == expected_table_names
+    assert all(isinstance(relation, Relation) for relation in relationships)
+    assert len(relationships) == 3
+
+
 def check_intermediary_representation_simple_all_table(tables, relationships):
     # The Base know there are 6 tables because the tables are created with this Base.
     assert len(tables) == 6

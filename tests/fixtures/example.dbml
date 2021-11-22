@@ -1,0 +1,29 @@
+Table fct_contract_signed {
+    fct_contract_signed_k uuid [primary key]
+    dim_foo_k uuid
+    dim_bar_k uuid
+    dim_contract_details_k uuid
+    value double
+}
+
+Table dim_contract_details {
+    dim_contract_details_k uuid [primary key]
+    valid_from timestamp
+    valid_to timestamp
+    is_valid boolean
+}
+
+Table dim_foo {
+    dim_foo_k uuid [primary key]
+    label text
+}
+
+Table dim_bar {
+    dim_bar_k uuid [primary key]
+    label text
+}
+
+
+Ref: dim_contract_details.dim_contract_details_k < fct_contract_signed.dim_contract_details_k
+Ref: fct_contract_signed.dim_foo_k > dim_foo.dim_foo_k
+Ref: dim_bar.dim_bar_k - fct_contract_signed.dim_bar_k
