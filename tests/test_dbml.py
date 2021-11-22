@@ -5,6 +5,13 @@ import pytest
 from eralchemy.dbml import (
     add_nullability,
     extract_cardinalities,
+    relation_to_intermediary,
+)
+
+from tests.common import (
+    ERColumn,
+    Relation as ERRelation,
+    Table as ERTable,
 )
 
 
@@ -17,7 +24,6 @@ def Column():
         pk: bool = False
 
     return _Column
-
 
 
 @pytest.fixture
@@ -35,6 +41,14 @@ def Relation(Column):
            self.col2 = [col_2]
 
     return _Relation
+
+
+def test_relation_to_intermediary(Relation):
+    relation = Relation('<')
+
+    intermediary_repr = relation_to_intermediary(relation)
+
+    assert isinstance(intermediary_repr, ERRelation)
 
 
 @pytest.mark.parametrize(
